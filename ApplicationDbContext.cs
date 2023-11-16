@@ -11,6 +11,7 @@ public class ApplicationDbContext : DbContext
     // Define las propiedades DbSet para cada tabla en base de datos
     public DbSet<Usuario> Usuarios { get; set; }
     public DbSet<Rol> Roles { get; set; }
+    public DbSet<TipoEntidad> TipoEntidades { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
