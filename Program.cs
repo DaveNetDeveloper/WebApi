@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-//using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,8 +19,20 @@ builder.Services.AddSwaggerGen(c => {
 
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql("Server=localhost:5432;Database=postgres;Username=postgres;Password=admin"));
- 
+
+
+builder.Services.AddCors();
+
 var app = builder.Build();
+
+
+app.UseCors(builder =>
+{
+    builder.AllowAnyOrigin()
+         .AllowAnyHeader()
+         .AllowAnyMethod();
+});
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
