@@ -8,13 +8,12 @@ public class ApplicationDbContext : DbContext
     {
     }
 
-    // Define las propiedades DbSet para cada tabla en tu base de datos
+    // Define las propiedades DbSet para cada tabla en base de datos
     public DbSet<Usuario> Usuarios { get; set; }
-    // Otros DbSet según tus tablas
+    public DbSet<Rol> Roles { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Puedes agregar configuraciones adicionales para el modelo aquí
-        // Por ejemplo, configuraciones de clave primaria, restricciones, etc.
+        // Configuraciones adicionales para el modelo, como configuraciones de clave primaria, restricciones, etc.
     }
 }
