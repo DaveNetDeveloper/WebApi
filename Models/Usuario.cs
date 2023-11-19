@@ -10,8 +10,10 @@
         public string contraseña { get; set; }
         public DateTime fechaNacimiento { get; set; }
         public bool suscrito { get; set; }
-        public DateTime? ultimaconexion { get; set; }
+        public DateTime? ultimaConexion { get; set; }
         public DateTime fechaCreación { get; set; }
         public int puntos { get; set; }
+        public string? token { get; set; }
+        public DateTime? expiracionToken { get; set; }
     }
 }

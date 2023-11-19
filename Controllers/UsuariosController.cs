@@ -1,5 +1,8 @@
 using API.Models;
 using Microsoft.AspNetCore.Mvc;
+//using Microsoft.AspNetCore.Authorization;
+
+using API.Utils; 
 
 namespace API.Controllers
 {
@@ -7,13 +10,9 @@ namespace API.Controllers
     [Route("[controller]")]
     public class UsuariosController : ControllerBase
     {
-        /*private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };*/
-
         private readonly ApplicationDbContext _dbContext;
         private readonly ILogger<UsuariosController> _logger;
+        private readonly int defaultPuntos = 300;
 
         public UsuariosController(ILogger<UsuariosController> logger, ApplicationDbContext dbContext)
         {
@@ -21,17 +20,49 @@ namespace API.Controllers
             _dbContext = dbContext;
         }
 
-        //[Route("[controller]/[action]/idUsuario")]
+        #region [private functions]
+
+        private bool ValidarToken(string token)
+        {
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                var usuarioDb = _dbContext.Usuarios
+                        .Where(u => u.token == token)
+                        .SingleOrDefault();
+                if (usuarioDb == null) return false;
+
+                var expiracionToken = usuarioDb.expiracionToken;
+                if (expiracionToken > DateTime.UtcNow)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        #endregion
+
+        #region [web services]
+
+        //[Authorize]
         [HttpGet("ObtenerUsuario/{id}")]
         public IActionResult ObtenerUsuarioById(int id)
         {
-            var usuarioDb = _dbContext.Usuarios.Find(id);
+            var token = HttpContext.Request.Headers["Authorization"].ToString(); // esto puede ser una propiedad del controller?
+            if (string.IsNullOrWhiteSpace(token)) return Unauthorized(new { mensaje = "Token no informado." });
+            if (!ValidarToken(token)) return Unauthorized(new { mensaje = "Token no válido." });
+
+            var usuarioDb = _dbContext.Usuarios.Find(id); 
             return usuarioDb != null ? Ok(usuarioDb) : NoContent();
         }
 
         [HttpGet("ObtenerUsuarioByEmail")]
         public IActionResult ObtenerUsuarioByEmail([FromQuery] string email)
         {
+            var token = HttpContext.Request.Headers["Authorization"].ToString(); // esto puede ser una propiedad del controller?
+            if (string.IsNullOrWhiteSpace(token)) return Unauthorized(new { mensaje = "Token no informado." });
+            if (!ValidarToken(token)) return Unauthorized(new { mensaje = "Token no válido." });
+
             var usuarioDb = _dbContext.Usuarios
             .Where(u => u.correo.ToLower() == email.ToLower())
             .SingleOrDefault();
@@ -39,7 +70,6 @@ namespace API.Controllers
             return usuarioDb != null ? Ok(usuarioDb) : NoContent();
         }
 
-        //[Route("[controller]/[action]/)]
         [HttpGet("ObtenerUsuarios")]
         public IActionResult ObtenerUsuarios()
         {
@@ -47,7 +77,6 @@ namespace API.Controllers
             return (usersList != null && usersList.Count > 0) ? Ok(usersList) : NoContent();
         }
 
-        //[Route("[controller]")]
         [HttpPost("CrearUsuario")]
         public IActionResult CrearUsuario([FromBody] Usuario usuario)
         {
@@ -61,9 +90,10 @@ namespace API.Controllers
                 fechaNacimiento = usuario.fechaNacimiento.ToUniversalTime(),
                 suscrito = usuario.suscrito,
                 fechaCreación = DateTime.UtcNow,
-                ultimaconexion = null,
-                puntos = 0
-
+                ultimaConexion = null,
+                puntos = defaultPuntos,
+                token= null,
+                expiracionToken = null
             };
 
             _dbContext.Usuarios.Add(nuevoUsuario);
@@ -74,6 +104,10 @@ namespace API.Controllers
         [HttpPut("ActualizarUsuario")]
         public IActionResult ActualizarUsuario([FromBody] Usuario usuario) 
         {
+            var token = HttpContext.Request.Headers["Authorization"].ToString(); // esto puede ser una propiedad del controller?
+            if (string.IsNullOrWhiteSpace(token)) return Unauthorized(new { mensaje = "Token no informado." });
+            if (!ValidarToken(token)) return Unauthorized(new { mensaje = "Token no válido." });
+
             var usuarioDb = _dbContext.Usuarios
            .Where(u => u.id == usuario.id)
            .SingleOrDefault();
@@ -85,7 +119,8 @@ namespace API.Controllers
                 usuarioDb.activo = usuario.activo;
                 usuarioDb.fechaNacimiento = usuario.fechaNacimiento.ToUniversalTime();
                 usuarioDb.suscrito = usuario.suscrito;
-                
+                usuarioDb.puntos = usuario.puntos;
+
                 _dbContext.SaveChanges();
                 return Ok($"Usuario modificado correctamente: {usuarioDb.nombre}");
             }
@@ -93,7 +128,7 @@ namespace API.Controllers
                 return NotFound();
             } 
         }
-
+        
         [HttpPatch("Login")]
         public IActionResult Login([FromQuery] string email, string contraseña)
         {
@@ -102,8 +137,14 @@ namespace API.Controllers
             .SingleOrDefault();
 
             if (usuarioDb != null) {
-                usuarioDb.ultimaconexion = DateTime.UtcNow;
+                
+                usuarioDb.ultimaConexion = DateTime.UtcNow;
+                usuarioDb.token = "Bearer " + Utilities.GetHashedValue(DateTime.Now.ToString());
+                usuarioDb.expiracionToken = DateTime.Now.AddDays(30).ToUniversalTime();
                 _dbContext.SaveChanges();
+
+                // TODO en front llamar despues el envio de mail al usuario con el link de validación de la nueva cuenta
+                 
                 //return Ok($"Usuario {usuario.nombre} logeado correctamente.");
                 return Ok(usuarioDb);
             }
@@ -115,6 +156,10 @@ namespace API.Controllers
         [HttpPatch("CambiarContraseña")]
         public IActionResult CambiarContraseña([FromQuery] string email, string nuevaContraseña) 
         {
+            var token = HttpContext.Request.Headers["Authorization"].ToString(); // esto puede ser una propiedad del controller?
+            if (string.IsNullOrWhiteSpace(token)) return Unauthorized(new { mensaje = "Token no informado." });
+            if (!ValidarToken(token)) return Unauthorized(new { mensaje = "Token no válido." });
+
             var usuarioDb = _dbContext.Usuarios
             .Where(u => u.correo.ToLower() == email.ToLower())
             .SingleOrDefault();
@@ -122,6 +167,9 @@ namespace API.Controllers
             if (usuarioDb != null) {
                 usuarioDb.contraseña = nuevaContraseña;
                 _dbContext.SaveChanges();
+
+                // TODO en front llamar despues el envio de mail al usuario con el link de cambio de contraseña
+
                 return Ok($"Contraseña cambiada correctamente para el usuario con el correo [{usuarioDb.correo}].");
             }
             else {
@@ -132,13 +180,21 @@ namespace API.Controllers
         [HttpPatch("ValidarCuenta")]
         public IActionResult ValidarCuenta([FromQuery] string email) 
         {
+            var token = HttpContext.Request.Headers["Authorization"].ToString(); // esto puede ser una propiedad del controller?
+            if (string.IsNullOrWhiteSpace(token)) return Unauthorized(new { mensaje = "Token no informado." });
+            if (!ValidarToken(token)) return Unauthorized(new { mensaje = "Token no válido." });
+
             var usuarioDb = _dbContext.Usuarios
             .Where(u => u.correo.ToLower() == email.ToLower())
             .SingleOrDefault();
 
             if (usuarioDb != null) {
-
                 usuarioDb.activo = true;
+                
+                usuarioDb.ultimaConexion = DateTime.UtcNow;
+                usuarioDb.token = "Bearer " + Utilities.GetHashedValue(DateTime.Now.ToString());
+                usuarioDb.expiracionToken = DateTime.Now.AddDays(30).ToUniversalTime();
+
                 _dbContext.SaveChanges();
                 return Ok($"El usuario [{usuarioDb.correo}] se ha activado correctamente.");
             }
@@ -150,6 +206,10 @@ namespace API.Controllers
         [HttpPatch("ActivacionSuscripcion")]
         public IActionResult ActivacionSuscripcion([FromQuery] string email, bool suscrito) 
         {
+            var token = HttpContext.Request.Headers["Authorization"].ToString(); // esto puede ser una propiedad del controller?
+            if (string.IsNullOrWhiteSpace(token)) return Unauthorized(new { mensaje = "Token no informado." });
+            if (!ValidarToken(token)) return Unauthorized(new { mensaje = "Token no válido." });
+
             var usuarioDb = _dbContext.Usuarios
             .Where(u => u.correo.ToLower() == email.ToLower())
             .SingleOrDefault();
@@ -164,9 +224,14 @@ namespace API.Controllers
             }
         }
 
+        //[Authorize]
         [HttpDelete("Eliminar/{id}")]
         public IActionResult Eliminar(int id)
         {
+            var token = HttpContext.Request.Headers["Authorization"].ToString(); // esto puede ser una propiedad del controller?
+            if (string.IsNullOrWhiteSpace(token)) return Unauthorized(new { mensaje = "Token no informado." });
+            if (!ValidarToken(token)) return Unauthorized(new { mensaje = "Token no válido." });
+
             var usuarioDb = _dbContext.Usuarios
            .Where(u => u.id == id)
            .SingleOrDefault();
@@ -180,5 +245,7 @@ namespace API.Controllers
                 return NotFound();
             }
         }
+
+        #endregion
     }
 }
