@@ -2,16 +2,20 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-
-var builder = WebApplication.CreateBuilder(args);
+using API.Controllers;
+using API;
 
 // Add services to the container.
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
- 
-//builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<CorreoService>();
+
+builder.Services.Configure<AppConfiguration>(builder.Configuration.GetSection("AppConfiguration"));
+
 builder.Services.AddSwaggerGen(c => {
     c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
     c.IgnoreObsoleteActions();
@@ -36,22 +40,19 @@ builder.Services.AddAuthentication(options =>
 //    };
 //})
 
-
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql("Server=localhost:5432;Database=postgres;Username=postgres;Password=admin"));
-
+builder.Services.AddDbContext<ApplicationDbContext>(options => 
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+    );
 
 builder.Services.AddCors();
 
 var app = builder.Build();
 
-
-app.UseCors(builder =>
-{
+app.UseCors(builder => {
     builder.AllowAnyOrigin()
-         .AllowAnyHeader()
-         .AllowAnyMethod();
+           .AllowAnyHeader()
+           .AllowAnyMethod();
 });
-
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
