@@ -1,6 +1,7 @@
 ﻿using System.Net.Mail;
 using System.Net;
 using System.Text;
+using API.Requests;
 
 namespace API.Services
 {
@@ -21,13 +22,16 @@ namespace API.Services
     //  
 
     public class CorreoService {
-        public void EnviarCorreo(TipoEnvioCorreos tipoEnvio, string destinatario, string asunto, string cuerpo, string servidorSmtp, int puertoSmtp, string usuarioSmtp, string contraseñaSmtp)
+        public void EnviarCorreo(CorreoRequest request, string servidorSmtp, int puertoSmtp, string usuarioSmtp, string contraseñaSmtp)
         {
+
+            var tipoEnvio = request.TipoEnvio
+;
             using (var mensaje = new MailMessage()) {
                 mensaje.From = new MailAddress(usuarioSmtp);
-                mensaje.To.Add(destinatario);
-                mensaje.Subject = asunto;
-                mensaje.Body = cuerpo;
+                mensaje.To.Add(request.Destinatario);
+                mensaje.Subject = request.Asunto;
+                mensaje.Body = request.Cuerpo;
                 mensaje.IsBodyHtml = true;
 
                 using (var clienteSmtp = new SmtpClient(servidorSmtp, puertoSmtp)) {
