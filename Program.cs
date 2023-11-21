@@ -2,8 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using API.Controllers;
-using API;
+using API.Services;
+using API.Models;
 
 // Add services to the container.
 var builder = WebApplication.CreateBuilder(args);
@@ -24,8 +24,7 @@ builder.Services.AddSwaggerGen(c => {
 });
 
 //var key = Encoding.ASCII.GetBytes("mi__secreto_secreto");
-builder.Services.AddAuthentication(options =>
-{
+builder.Services.AddAuthentication(options => {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 });

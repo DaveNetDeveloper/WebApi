@@ -1,4 +1,4 @@
-﻿namespace API
+﻿namespace API.Models
 {
     public class AppConfiguration
     {
@@ -7,4 +7,4 @@
         public string UsuarioSmtp { get; set; }
         public string ContraseñaSmtp { get; set; }
     }
-}  
+}
