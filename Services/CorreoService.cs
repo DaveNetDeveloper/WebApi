@@ -5,6 +5,7 @@ using API.Requests;
 
 namespace API.Services
 {
+    //
     public enum TipoEnvioCorreos {
         ValidaciónCuenta,
         Bienvenida,
@@ -15,23 +16,33 @@ namespace API.Services
         InscripcionActividad
     }
 
-    // TODO 
-    // Crear controlador en API
-    // Crear controlador en Web
-    // 
-    //  
+    //
+    public class ContenidoCorreo {
 
+        public ContenidoCorreo() { }
+
+        public ContenidoCorreo(string asunto, string cuerpo) {
+            Asunto = asunto;
+            Cuerpo = cuerpo;
+        }
+
+        public string Asunto { get; set; }
+        public string? Cuerpo { get; set; }
+    }
+
+
+    //
     public class CorreoService {
+
         public void EnviarCorreo(CorreoRequest request, string servidorSmtp, int puertoSmtp, string usuarioSmtp, string contraseñaSmtp)
         {
-
-            var tipoEnvio = request.TipoEnvio
+            var contenido = ConstruirCuerpoHTML(request.TipoEnvio, "nombreUsuario", "token");
 ;
             using (var mensaje = new MailMessage()) {
                 mensaje.From = new MailAddress(usuarioSmtp);
                 mensaje.To.Add(request.Destinatario);
-                mensaje.Subject = request.Asunto;
-                mensaje.Body = request.Cuerpo;
+                mensaje.Subject = contenido.Asunto;
+                mensaje.Body = contenido.Cuerpo;
                 mensaje.IsBodyHtml = true;
 
                 using (var clienteSmtp = new SmtpClient(servidorSmtp, puertoSmtp)) {
@@ -40,33 +51,33 @@ namespace API.Services
                     //clienteSmtp.Send(mensaje);
                 }
             }
-        }
+        } 
 
-        public void EnviarCorreoConPlantilla(TipoEnvioCorreos tipoEnvio, string destinatario, string nombreUsuario, string token, string servidorSmtp, int puertoSmtp, string usuarioSmtp, string contraseñaSmtp)
+        private ContenidoCorreo ConstruirCuerpoHTML(TipoEnvioCorreos tipoEnvio, string nombreUsuario, string token)
         {
             string asunto = "Bienvenido a nuestra aplicación";
-            string cuerpo = ConstruirCuerpoHTML(nombreUsuario, token);
 
-            using (var mensaje = new MailMessage()) {
-                mensaje.From = new MailAddress(usuarioSmtp);
-                mensaje.To.Add(destinatario);
-                mensaje.Subject = asunto;
-                mensaje.Body = cuerpo;
-                mensaje.IsBodyHtml = true;
+            switch (tipoEnvio) {
+                case TipoEnvioCorreos.ValidaciónCuenta:
 
-                using (var clienteSmtp = new SmtpClient(servidorSmtp, puertoSmtp)) {
-                    clienteSmtp.Credentials = new NetworkCredential(usuarioSmtp, contraseñaSmtp);
-                    clienteSmtp.EnableSsl = true;
-                    //clienteSmtp.Send(mensaje);
-                }
+                    break;
+                case TipoEnvioCorreos.Bienvenida:
+
+                    break;
+                case TipoEnvioCorreos.CambiarContraseña:
+
+                    break;
+                case TipoEnvioCorreos.ContraseñaCambiada:
+
+                    break;
+                case TipoEnvioCorreos.SuscripciónActivada:
+
+                    break;
             }
-        }
 
-        private string ConstruirCuerpoHTML(string nombreUsuario, string token)
-        {
             string logoUrl = "url-de-tu-logo.jpg";
 
-            StringBuilder cuerpo = new StringBuilder();
+            StringBuilder cuerpo = new();
             cuerpo.AppendLine("<html>");
             cuerpo.AppendLine("<head>");
             cuerpo.AppendLine("<style>");
@@ -89,7 +100,7 @@ namespace API.Services
             cuerpo.AppendLine("</body>");
             cuerpo.AppendLine("</html>");
 
-            return cuerpo.ToString();
+            return new ContenidoCorreo(asunto, cuerpo.ToString());
         }
     }
 }
