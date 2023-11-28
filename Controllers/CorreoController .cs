@@ -1,8 +1,9 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+
 using API.Models;
 using API.Requests;
 using API.Services;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace API.Controllers
 {

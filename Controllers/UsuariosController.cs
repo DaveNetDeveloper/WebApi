@@ -27,7 +27,7 @@ namespace API.Controllers
             if (!string.IsNullOrWhiteSpace(token))
             {
                 var usuarioDb = _dbContext.Usuarios
-                        .Where(u => u.token == token)
+                        .Where(u => "Bearer " + u.token == token)
                         .SingleOrDefault();
                 if (usuarioDb == null) return false;
 
@@ -85,20 +85,21 @@ namespace API.Controllers
                 nombre = usuario.nombre,
                 correo = usuario.correo,
                 apellidos = usuario.apellidos,
-                activo = usuario.activo,
+                activo = false,//usuario.activo,
                 contraseña = usuario.contraseña,
                 fechaNacimiento = usuario.fechaNacimiento.ToUniversalTime(),
                 suscrito = usuario.suscrito,
                 fechaCreación = DateTime.UtcNow,
                 ultimaConexion = null,
-                puntos = defaultPuntos,
+                puntos = 0,//defaultPuntos,
                 token= null,
                 expiracionToken = null
             };
 
             _dbContext.Usuarios.Add(nuevoUsuario);
             _dbContext.SaveChanges();
-            return Ok($"Usuario creado correctamente: {nuevoUsuario.nombre}");
+            
+            return Ok(nuevoUsuario);
         }
 
         [HttpPut("ActualizarUsuario")]
@@ -122,7 +123,7 @@ namespace API.Controllers
                 usuarioDb.puntos = usuario.puntos;
 
                 _dbContext.SaveChanges();
-                return Ok($"Usuario modificado correctamente: {usuarioDb.nombre}");
+                return Ok(usuarioDb);
             }
             else {
                 return NotFound();
@@ -142,8 +143,6 @@ namespace API.Controllers
                 usuarioDb.token = "Bearer " + Utilities.GetHashedValue(DateTime.Now.ToString());
                 usuarioDb.expiracionToken = DateTime.Now.AddDays(30).ToUniversalTime();
                 _dbContext.SaveChanges();
-
-                // TODO en front llamar despues el envio de mail al usuario con el link de validación de la nueva cuenta
                  
                 //return Ok($"Usuario {usuario.nombre} logeado correctamente.");
                 return Ok(usuarioDb);
@@ -168,9 +167,7 @@ namespace API.Controllers
                 usuarioDb.contraseña = nuevaContraseña;
                 _dbContext.SaveChanges();
 
-                // TODO en front llamar despues el envio de mail al usuario con el link de cambio de contraseña
-
-                return Ok($"Contraseña cambiada correctamente para el usuario con el correo [{usuarioDb.correo}].");
+                return Ok(usuarioDb);
             }
             else {
                 return NotFound();
@@ -180,23 +177,25 @@ namespace API.Controllers
         [HttpPatch("ValidarCuenta")]
         public IActionResult ValidarCuenta([FromQuery] string email) 
         {
-            var token = HttpContext.Request.Headers["Authorization"].ToString(); // esto puede ser una propiedad del controller?
-            if (string.IsNullOrWhiteSpace(token)) return Unauthorized(new { mensaje = "Token no informado." });
-            if (!ValidarToken(token)) return Unauthorized(new { mensaje = "Token no válido." });
+            //var token = HttpContext.Request.Headers["Authorization"].ToString(); // esto puede ser una propiedad del controller?
+            //if (string.IsNullOrWhiteSpace(token)) return Unauthorized(new { mensaje = "Token no informado." });
+            //if (!ValidarToken(token)) return Unauthorized(new { mensaje = "Token no válido." });
 
             var usuarioDb = _dbContext.Usuarios
-            .Where(u => u.correo.ToLower() == email.ToLower())
+            .Where(u => u.correo.ToLower() == email.ToLower() && u.activo == false)
             .SingleOrDefault();
 
             if (usuarioDb != null) {
                 usuarioDb.activo = true;
                 
                 usuarioDb.ultimaConexion = DateTime.UtcNow;
-                usuarioDb.token = "Bearer " + Utilities.GetHashedValue(DateTime.Now.ToString());
+                usuarioDb.token = Utilities.GetHashedValue(DateTime.Now.ToString());
                 usuarioDb.expiracionToken = DateTime.Now.AddDays(30).ToUniversalTime();
 
                 _dbContext.SaveChanges();
-                return Ok($"El usuario [{usuarioDb.correo}] se ha activado correctamente.");
+                
+                //return Ok($"El usuario [{usuarioDb.correo}] se ha activado correctamente.");
+                return Ok(usuarioDb);
             }
             else {
                 return NotFound();
