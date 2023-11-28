@@ -43,7 +43,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
     );
 
-builder.Services.AddCors();
+builder.Services.AddCors(options => {
+    options.AddPolicy("AllowAll",
+        builder => {
+            builder
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .Build();
+
+        });
+});
 
 var app = builder.Build();
 

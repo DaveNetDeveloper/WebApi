@@ -12,6 +12,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Usuario> Usuarios { get; set; }
     public DbSet<Rol> Roles { get; set; }
     public DbSet<TipoEntidad> TipoEntidades { get; set; }
+    public DbSet<Transaccion> Transacciones { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

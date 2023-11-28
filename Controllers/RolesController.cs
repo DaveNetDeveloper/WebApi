@@ -24,7 +24,7 @@ namespace API.Controllers
         }
 
         [HttpGet("ObtenerRolByName")]
-        public IActionResult ObtenerRolByname([FromQuery] string nombre)
+        public IActionResult ObtenerRolByName([FromQuery] string nombre)
         {
             var rolDb = _dbContext.Roles
             .Where(r => r.nombre.ToLower() == nombre.ToLower())
@@ -46,7 +46,7 @@ namespace API.Controllers
             var nuevoRol = new Rol {
                 id = new Guid(),
                 nombre = rol.nombre,
-                descripción = rol.descripción
+                descripcion = rol.descripcion
             };
             _dbContext.Roles.Add(nuevoRol);
             _dbContext.SaveChanges();
@@ -63,7 +63,7 @@ namespace API.Controllers
             if (rolDb != null) {
                 rolDb.id = rol.id;
                 rolDb.nombre = rol.nombre;
-                rolDb.descripción = rol.descripción;
+                rolDb.descripcion = rol.descripcion;
                 _dbContext.SaveChanges();
                 return Ok($"Rol modificado correctamente: {rolDb.nombre}.");
             }
