@@ -17,7 +17,7 @@ namespace API.Controllers
         }
 
         [HttpGet("ObtenerTransaccion/{id}")]
-        public IActionResult ObtenerTransaccionById(Guid id)
+        public IActionResult ObtenerTransaccionById(int id)
         {
             var transaccionDb = _dbContext.Transacciones.Find(id);
             return transaccionDb != null ? Ok(transaccionDb) : NoContent();
@@ -28,7 +28,7 @@ namespace API.Controllers
         {
             var transaccionDb = _dbContext.Transacciones
             .Where(r => r.nombre.ToLower() == nombre.ToLower())
-            .SingleOrDefault();
+            .ToList();
 
             return transaccionDb != null ? Ok(transaccionDb) : NoContent();
         }
@@ -78,8 +78,7 @@ namespace API.Controllers
            .Where(r => r.id == transaccion.id)
            .SingleOrDefault();
 
-            if (transaccionDb != null) {
-                transaccionDb.id = transaccion.id;
+            if (transaccionDb != null) { 
                 transaccionDb.nombre = transaccion.nombre;
                 transaccionDb.puntos = transaccion.puntos;
                 transaccionDb.fecha = transaccion.fecha;

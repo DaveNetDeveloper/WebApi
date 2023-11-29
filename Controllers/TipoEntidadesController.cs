@@ -61,8 +61,7 @@ namespace API.Controllers
            .Where(e => e.id == tipoEntidad.id)
            .SingleOrDefault();
 
-            if (dbEntity != null) {
-                dbEntity.id = tipoEntidad.id;
+            if (dbEntity != null) { 
                 dbEntity.nombre = tipoEntidad.nombre;
                 dbEntity.descripcion = tipoEntidad.descripcion;
                 _dbContext.SaveChanges();

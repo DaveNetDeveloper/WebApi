@@ -13,6 +13,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<Rol> Roles { get; set; }
     public DbSet<TipoEntidad> TipoEntidades { get; set; }
     public DbSet<Transaccion> Transacciones { get; set; }
+    public DbSet<QR> QRs { get; set; }
+    public DbSet<Entidad> Entidades { get; set; }
+    public DbSet<Producto> Productos { get; set; }
+    public DbSet<Actividad> Actividades { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
