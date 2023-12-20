@@ -27,7 +27,23 @@ namespace API.Controllers
         public IActionResult ObtenerEntidadByName([FromQuery] string nombre)
         {
             var entidadDb = _dbContext.Entidades
-            .Where(r => r.nombre.ToLower() == nombre.ToLower())
+            .Where(r => r.nombre.ToLower().Contains(nombre.ToLower()))
+            .ToList();
+
+            return entidadDb != null ? Ok(entidadDb) : NoContent();
+        }
+
+        [HttpGet("ObtenerEntidadesByFilters")]
+        public IActionResult ObtenerEntidadesByFilters([FromQuery] string nombre, int proximidad, int tipo, int categoria)
+        {
+            var gudIdTipo = tipo switch
+            {
+                1 => new Guid("64569dd3-4d65-4eed-9f41-ea87b2270a6c"),
+                2 => new Guid("e170a0db-660f-4c34-ae71-3e9b9dbbd92b"),
+                _ => new Guid(),
+            };
+            var entidadDb = _dbContext.Entidades
+            .Where(r => r.nombre.ToLower().Contains(nombre.ToLower()) || r.idTipoEntidad == gudIdTipo)
             .ToList();
 
             return entidadDb != null ? Ok(entidadDb) : NoContent();
@@ -51,7 +67,8 @@ namespace API.Controllers
                 popularidad = entidad.popularidad,
                 descripcion = entidad.descripcion,
                 activo = entidad.activo,
-                idTipoEntidad = entidad.idTipoEntidad
+                idTipoEntidad = entidad.idTipoEntidad,
+                imagen = entidad.imagen
             };
             _dbContext.Entidades.Add(nuevaEntidad);
             _dbContext.SaveChanges(); 
@@ -74,6 +91,7 @@ namespace API.Controllers
                 entidadDb.descripcion = entidad.descripcion;
                 entidadDb.activo = entidad.activo;
                 entidadDb.idTipoEntidad = entidad.idTipoEntidad;
+                entidadDb.imagen = entidad.imagen;
 
                 _dbContext.SaveChanges();
                 return Ok(entidadDb);

@@ -22,11 +22,13 @@ namespace API.Utils {
             return hashed;
         }
 
+        //
         public static string GetEncodeValue(string value) {
 
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
         }
 
+        //
         public static string GetDecodeValue(string value)
         { 
             byte[] bytesDecodificados = Convert.FromBase64String(value);

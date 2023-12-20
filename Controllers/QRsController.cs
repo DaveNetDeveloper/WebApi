@@ -1,6 +1,5 @@
 using API.Models;
 using Microsoft.AspNetCore.Mvc;
-using System;
 
 namespace API.Controllers
 {
@@ -27,11 +26,12 @@ namespace API.Controllers
         [HttpGet("ObtenerQRByCode")]
         public IActionResult ObtenerQRByCode([FromQuery] string qrCode)
         {
-            var qrnDb = _dbContext.QRs
-            .Where(r => r.qrCode.ToLower() == qrCode.ToLower())
-            .ToList();
+            var qrDb = _dbContext.QRs
+            .Where(r => r.qrCode.ToLower() == qrCode.ToLower() 
+                    && r.activo == true && r.consumido == false)
+            .SingleOrDefault();
 
-            return qrnDb != null ? Ok(qrnDb) : NoContent();
+            return qrDb != null ? Ok(qrDb) : NoContent();
         }
 
         [HttpGet("ObtenerQRs")]

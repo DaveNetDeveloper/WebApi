@@ -144,7 +144,6 @@ namespace API.Controllers
                 usuarioDb.expiracionToken = DateTime.Now.AddDays(30).ToUniversalTime();
                 _dbContext.SaveChanges();
                  
-                //return Ok($"Usuario {usuario.nombre} logeado correctamente.");
                 return Ok(usuarioDb);
             }
             else {

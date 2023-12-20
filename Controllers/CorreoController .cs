@@ -23,7 +23,6 @@ namespace API.Controllers
         [HttpPost("Enviar")]
         public IActionResult EnviarCorreo([FromBody] CorreoRequest request) {
             try {
-
                 _correoService.EnviarCorreo(request, _appConfiguration.ServidorSmtp, _appConfiguration.PuertoSmtp, _appConfiguration.UsuarioSmtp, _appConfiguration.ContraseñaSmtp);
                 return Ok("Correo enviado correctamente");
             }

@@ -5,6 +5,7 @@
         public int id { get; set; }
         public int idEntidad { get; set; }
         public string nombre { get; set; }
+        public string? imagen { get; set; }
         public string descripción { get; set; }
         public int puntos { get; set; }
         public bool activo { get; set; }

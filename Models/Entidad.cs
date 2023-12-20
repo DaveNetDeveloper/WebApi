@@ -10,5 +10,6 @@
         public string descripcion { get; set; }
         public bool activo { get; set; }
         public Guid idTipoEntidad { get; set; }
+        public string imagen { get; set; }
     }
 }
