@@ -19,18 +19,18 @@ namespace API.Controllers
         [HttpGet("ObtenerTipoEntidad/{id}")]
         public IActionResult ObtenerTipoEntidadById(Guid id)
         {
-            var dbEntity = _dbContext.TipoEntidades.Find(id);
-            return dbEntity != null ? Ok(dbEntity) : NoContent();
+            var dbEntityType = _dbContext.TipoEntidades.Find(id);
+            return dbEntityType != null ? Ok(dbEntityType) : NoContent();
         }
 
         [HttpGet("ObtenerTipoEntidadByName")]
         public IActionResult ObtenerTipoEntidadByname([FromQuery] string nombre)
         {
-            var dbEntity = _dbContext.TipoEntidades
+            var dbEntityType = _dbContext.TipoEntidades
             .Where(e => e.nombre.ToLower() == nombre.ToLower())
             .SingleOrDefault();
 
-            return dbEntity != null ? Ok(dbEntity) : NoContent();
+            return dbEntityType != null ? Ok(dbEntityType) : NoContent();
         }
 
         [HttpGet("ObtenerTipoEntidades")]
@@ -57,16 +57,15 @@ namespace API.Controllers
         [HttpPut("ActualizarTipoEntidad")]
         public IActionResult ActualizarTipoEntidad([FromBody] TipoEntidad tipoEntidad)
         {
-            var dbEntity = _dbContext.TipoEntidades
+            var dbEntityType = _dbContext.TipoEntidades
            .Where(e => e.id == tipoEntidad.id)
            .SingleOrDefault();
 
-            if (dbEntity != null) {
-                dbEntity.id = tipoEntidad.id;
-                dbEntity.nombre = tipoEntidad.nombre;
-                dbEntity.descripcion = tipoEntidad.descripcion;
+            if (dbEntityType != null) {
+                dbEntityType.nombre = tipoEntidad.nombre;
+                dbEntityType.descripcion = tipoEntidad.descripcion;
                 _dbContext.SaveChanges();
-                return Ok($"Tipo de entidad modificado correctamente: {dbEntity.nombre}.");
+                return Ok($"Tipo de entidad modificado correctamente: {dbEntityType.nombre}.");
             }
             else {
                 return NotFound();
@@ -76,14 +75,14 @@ namespace API.Controllers
         [HttpDelete("Eliminar/{id}")]
         public IActionResult Eliminar(Guid id)
         {
-            var dbEntity = _dbContext.TipoEntidades
+            var dbEntityType = _dbContext.TipoEntidades
            .Where(e => e.id == id)
            .SingleOrDefault();
 
-            if (dbEntity != null) {
-                _dbContext.TipoEntidades.Remove(dbEntity);
+            if (dbEntityType != null) {
+                _dbContext.TipoEntidades.Remove(dbEntityType);
                 _dbContext.SaveChanges();
-                return Ok($"El tipo de entidad [{dbEntity.nombre}] se ha eliminado correctamente.");
+                return Ok($"El tipo de entidad [{dbEntityType.nombre}] se ha eliminado correctamente.");
             }
             else {
                 return NotFound();

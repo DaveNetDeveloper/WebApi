@@ -1,8 +1,9 @@
-namespace API.Models
+﻿namespace API.Models
 {
-    public class Rol
+    public class Categoria
     {
         public Guid id { get; set; }
+        public Guid idTipoEntidad { get; set; }
         public string nombre { get; set; }
         public string? descripcion { get; set; }
     }
