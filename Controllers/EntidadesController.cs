@@ -34,16 +34,15 @@ namespace API.Controllers
         }
 
         [HttpGet("ObtenerEntidadesByFilters")]
-        public IActionResult ObtenerEntidadesByFilters([FromQuery] string nombre, int proximidad, int tipo, int categoria)
+        public IActionResult ObtenerEntidadesByFilters([FromQuery] string? nombre, int proximidad, int tipo, int categoria)
         {
             var gudIdTipo = tipo switch
             {
                 1 => new Guid("64569dd3-4d65-4eed-9f41-ea87b2270a6c"),
-                2 => new Guid("e170a0db-660f-4c34-ae71-3e9b9dbbd92b"),
-                _ => new Guid(),
+                2 => new Guid("e170a0db-660f-4c34-ae71-3e9b9dbbd92b")
             };
             var entidadDb = _dbContext.Entidades
-            .Where(r => r.nombre.ToLower().Contains(nombre.ToLower()) || r.idTipoEntidad == gudIdTipo)
+            .Where(r => (!string.IsNullOrEmpty(nombre) && r.nombre.ToLower().Contains(nombre.ToLower()))|| (gudIdTipo != null && r.idTipoEntidad == gudIdTipo))
             .ToList();
 
             return entidadDb != null ? Ok(entidadDb) : NoContent();

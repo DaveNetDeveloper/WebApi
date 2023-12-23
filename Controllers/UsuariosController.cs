@@ -70,6 +70,16 @@ namespace API.Controllers
             return usuarioDb != null ? Ok(usuarioDb) : NoContent();
         }
 
+        [HttpGet("ObtenerUsuarioByToken")]
+        public IActionResult ObtenerUsuarioByToken([FromQuery] string token)
+        {
+            var usuarioDb = _dbContext.Usuarios
+            .Where(u => u.token.ToLower() == token.ToLower())
+            .SingleOrDefault();
+
+            return usuarioDb != null ? Ok(usuarioDb) : NoContent();
+        }
+
         [HttpGet("ObtenerUsuarios")]
         public IActionResult ObtenerUsuarios()
         {
